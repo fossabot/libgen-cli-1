@@ -1,0 +1,1 @@
+# libgen-cli [![Go Report Card](https://goreportcard.com/badge/github.com/binodsh/libgen)](https://goreportcard.com/report/github.com/binodsh/libgen)
