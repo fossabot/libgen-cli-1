@@ -63,7 +63,7 @@ var SearchCommand = &cobra.Command{
 			Details: `
 				--------- Book Details ----------
 				{{ "Title:" | faint }} {{if gt (len .Title) 60}} {{ (slice .Title 0 60) }}.... {{else}} {{.Title}} {{end}}
-				{{ "@author:" | faint }} {{if gt (len .Author) 60}} {{ (slice .Author 0 60) }}.... {{else}} {{.Author}} {{end}}    {{ "@publisher:" | faint }} {{ .Publisher }}    {{ "@year:" | faint }} {{ .Year }}
+				{{ "@author:" | faint }} {{if gt (len .Author) 60}} {{ (slice .Author 0 60) }}.... {{else}} {{.Author}} {{end}}    {{ "@publisher:" | faint }} {{if gt (len .Publisher) 60}} {{ (slice .Publisher 0 60) }}.... {{else}} {{.Publisher}} {{end}}    {{ "@year:" | faint }} {{ .Year }}
 				{{ "@extension:" | faint }} {{ .Extension }}    {{ "@pages:" | faint }} {{ .Pages }}`,
 			Help: `{{ "Use the arrow keys to navigate: ↓ ↑ → ← & Hit Enter to download the book." | faint}}`,
 		}
