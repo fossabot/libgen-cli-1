@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/binodsh/libgen"
 	"github.com/cheggaaa/pb"
@@ -34,12 +35,15 @@ func Download(book libgen.BookInfo) error {
 		fileSize := r.ContentLength
 		bar := pb.Full.Start64(fileSize)
 
-		out, err2 := createOutputFile(filename)
-		if err2 != nil {
-			return err2
+		//save file to libgen folder under the current directory
+		currentDir, _ := os.Getwd()
+		currentDir += "/libgen"
+		out, err := createFile(currentDir, filename)
+		if err != nil {
+			return err
 		}
 
-		_, err := io.Copy(out, bar.NewProxyReader(r.Body))
+		_, err = io.Copy(out, bar.NewProxyReader(r.Body))
 		if err != nil {
 			return err
 		}
@@ -47,6 +51,7 @@ func Download(book libgen.BookInfo) error {
 		bar.Finish()
 		out.Close()
 		r.Body.Close()
+		fmt.Println("Book saved to " + currentDir + "/" + filename)
 	} else {
 		return fmt.Errorf("unable to reach mirror %v: HTTP %v", req.Host, r.StatusCode)
 	}
@@ -55,25 +60,18 @@ func Download(book libgen.BookInfo) error {
 
 }
 
-func createOutputFile(filename string) (*os.File, error) {
-	var mkErr error
-	var out *os.File
+func createFile(outputDir, filename string) (*os.File, error) {
+	outputDir = strings.TrimSuffix(outputDir, "/")
+	err := os.MkdirAll(outputDir, 0755)
 
-	wd, err := os.Getwd()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error while creating file: " + err.Error())
 	}
 
-	if stat, err := os.Stat(fmt.Sprintf("%s/libgen", wd)); err == nil && stat.IsDir() {
-		out, mkErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
-	} else {
-		if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0755); err != nil {
-			return nil, err
-		}
-		out, mkErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
-	}
-	if mkErr != nil {
-		return nil, mkErr
+	var out *os.File
+	out, err = os.Create(fmt.Sprintf("%s/%s", outputDir, filename))
+	if err != nil {
+		return nil, fmt.Errorf("error while creating file: " + err.Error())
 	}
 
 	return out, nil
