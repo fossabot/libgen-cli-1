@@ -44,13 +44,21 @@ var SearchCommand = &cobra.Command{
 				searchOptions.SortMode = sortMode
 			}
 		}
+
+		//show spinner while searching the book
 		s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
 		s.Start()
 		s.Suffix = " searching for '" + searchStr + "'"
 		books, err := libgen.Search(searchOptions)
 		s.Stop()
+
 		if err != nil {
 			fmt.Println("error while searching book")
+			return
+		}
+
+		if len(books) == 0 {
+			fmt.Println("Sorry, no books found")
 			return
 		}
 

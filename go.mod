@@ -3,7 +3,7 @@ module github.com/binodsh/libgen-cli
 go 1.13
 
 require (
-	github.com/binodsh/libgen v0.0.2
+	github.com/binodsh/libgen v0.0.3
 	github.com/briandowns/spinner v1.9.0
 	github.com/cheggaaa/pb v2.0.7+incompatible
 	github.com/cheggaaa/pb/v3 v3.0.4 // indirect
