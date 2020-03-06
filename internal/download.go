@@ -48,6 +48,7 @@ func Download(book libgen.BookInfo) error {
 			return err
 		}
 
+		fmt.Println("Book saved to " + currentDir + "/" + filename)
 		bar.Finish()
 		out.Close()
 		r.Body.Close()
