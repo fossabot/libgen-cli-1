@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/manifoldco/promptui"
 
 	"github.com/binodsh/libgen"
@@ -22,7 +24,7 @@ func init() {
 var SearchCommand = &cobra.Command{
 	Use:   "search",
 	Short: "search the book",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		searchStr := strings.Join(args, " ")
 		searchOptions := libgen.SearchOptions{}
@@ -43,42 +45,49 @@ var SearchCommand = &cobra.Command{
 			}
 		}
 
+		//show spinner while searching the book
+		s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+		s.Start()
+		s.Suffix = " searching for '" + searchStr + "'"
 		books, err := libgen.Search(searchOptions)
+		s.Stop()
 
 		if err != nil {
 			fmt.Println("error while searching book")
 			return
 		}
 
-		var titles []string
-		for _, book := range books {
-			titles = append(titles, book.Title)
+		if len(books) == 0 {
+			fmt.Println("Sorry, no books found")
+			return
 		}
 
 		//promtui template
 		templates := &promptui.SelectTemplates{
-			Label:    "{{ . }}?",
-			Active:   "\U0001F336 {{ .Title | cyan }}",
-			Inactive: "  {{ .Title | cyan }}",
-			Selected: "\U0001F336 {{ .Name | red | cyan }}",
+			Label:    "{{ . | red | bold}}",
+			Active:   "➡ {{ .Title | cyan | bold }}",
+			Inactive: "  {{ .Title | cyan | faint}}",
+			Selected: "➡️ {{ .Title | red | cyan }}",
 			Details: `
 				--------- Book Details ----------
-				{{ "Name:" | faint }} {{ .Title }}
-				{{ "@author:" | faint }} {{ .Author }}    {{ "@publisher:" | faint }} {{ .Publisher }}    {{ "@year:" | faint }} {{ .Year }}
+				{{ "Title:" | faint }} {{if gt (len .Title) 60}} {{ (slice .Title 0 60) }}.... {{else}} {{.Title}} {{end}}
+				{{ "@author:" | faint }} {{if gt (len .Author) 60}} {{ (slice .Author 0 60) }}.... {{else}} {{.Author}} {{end}}    {{ "@publisher:" | faint }} {{if gt (len .Publisher) 60}} {{ (slice .Publisher 0 60) }}.... {{else}} {{.Publisher}} {{end}}    {{ "@year:" | faint }} {{ .Year }}
 				{{ "@extension:" | faint }} {{ .Extension }}    {{ "@pages:" | faint }} {{ .Pages }}`,
+			Help: `{{ "Use the arrow keys to navigate: ↓ ↑ → ← & Hit Enter to download the book." | faint}}`,
 		}
 
 		prompt := promptui.Select{
-			Label:        "Select book to download",
+			Label:        "Select a book to download",
 			Items:        books,
 			Templates:    templates,
 			HideSelected: true,
+			Size:         10,
 		}
 
 		i, _, err := prompt.Run()
 
 		if err != nil {
-			fmt.Printf("Prompt failed %v\n", err)
+			fmt.Printf("%v\n", err)
 			return
 		}
 
